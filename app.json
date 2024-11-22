@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Curreny_Converter",
-    "slug": "Curreny_Converter",
+    "name": "EZ Convert",
+    "slug": "EZ-Convert",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
