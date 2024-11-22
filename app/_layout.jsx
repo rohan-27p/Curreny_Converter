@@ -7,7 +7,7 @@ const Stack = createStackNavigator();
 export default function RootLayout() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="index" component={MainScreen} options={{ title: "EZ Convert" }} />
+      <Stack.Screen name="index" component={MainScreen} options={{ title: "EZ Converter" }} />
     </Stack.Navigator>
   );
 }

@@ -1,126 +1,180 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, Image } from "react-native";
-import {Picker} from '@react-native-picker/picker'
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Modal, Image } from "react-native";
+import styles from "./styles";
+
 const App = () => {
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
   const [fromCurrency, setFromCurrency] = useState("USD");
   const [toCurrency, setToCurrency] = useState("EUR");
-  const [exchangeRate, setExchangeRate] = useState(0);
+  const [exchangeRate, setExchangeRate] = useState(1);
   const [currency, setCurrency] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFromCurrencyModalVisible, setFromCurrencyModalVisible] = useState(false);
+  const [isToCurrencyModalVisible, setToCurrencyModalVisible] = useState(false);
 
-  const API_URL = "https://v6.exchangerate-api.com/v6/435928af75ba208f4c00a7ba/latest/USD";
+  const currencyToCountry = {
+    USD: "US",
+    EUR: "EU",
+    INR: "IN",
+    GBP: "GB",
+    AUD: "AU",
+    CAD: "CA",
+    JPY: "JP",
+    CNY: "CN",
+    AED: "AE",
+    EGP: "EG",
 
-  const fetchCurrencies = async () => {
-    try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-      setCurrency(Object.keys(data.conversion_rates));
-      setExchangeRate(data.conversion_rates[toCurrency]);
-    } catch (error) {
-      console.error("Error fetching currencies:", error);
-    }
+    //mapping to fetch maps api for better ui while searching
   };
 
-  useEffect(() => {
-    fetchCurrencies();
-  }, []);
+  const API_URL =
+    "https://v6.exchangerate-api.com/v6/435928af75ba208f4c00a7ba/latest/USD";
 
   useEffect(() => {
-    const fetchExchangeRate = async () => {
+    const fetchCurrencies = async () => {
       try {
         const response = await fetch(API_URL);
         const data = await response.json();
+        setCurrency(Object.keys(data.conversion_rates));
         setExchangeRate(data.conversion_rates[toCurrency]);
       } catch (error) {
-        console.error("Error fetching exchange rate:", error);
+        console.error("Error fetching currencies:", error);
       }
     };
-    fetchExchangeRate();
-  }, [toCurrency]);
 
-  const convertCurrency = () => {
-    return (amount * exchangeRate).toFixed(3);
+    fetchCurrencies();
+  }, []);
+
+  const filteredCurrencies = currency.filter((cur) =>
+    cur.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const convertCurrency =() => {
+    if(!amount) return "";
+    return (amount*exchangeRate).toFixed(3);
   };
+  const swapCurrencies = async () => {
+    const newFromCurrency = toCurrency;
+    const newToCurrency = fromCurrency;
+  
+    setFromCurrency(newFromCurrency);
+    setToCurrency(newToCurrency);
+  
+    try {
+      const response=await fetch(
+        `https://v6.exchangerate-api.com/v6/435928af75ba208f4c00a7ba/latest/${newFromCurrency}`
+      );
+      const data=await response.json();
+      setExchangeRate(data.conversion_rates[newToCurrency]);
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+    }
+  };
+  
+  
+  const CurrencyModal=({ visible, setVisible, setCurrency }) => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={() => setVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search Currency"
+          placeholderTextColor="#666"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+        />
+        <FlatList
+          data={filteredCurrencies}
+          keyExtractor={(item) => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.currencyItem}
+              onPress={() => {
+                setCurrency(item);
+                setVisible(false);
+                setSearchQuery("");
+              }}
+            >
+              <Image
+                style={styles.flagIcon}
+                source={{
+                  uri:`https://flagsapi.com/${currencyToCountry[item]}/flat/64.png`,
+                }}
+              />
+              <Text style={styles.currencyText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    </Modal>
+  );
 
   return (
     <View style={styles.container}>
-     {/* <Image source={require("./images/favicon.png")} style={styles.image} /> */}
       <Text style={styles.title}>EZ Converter</Text>
       <TextInput
         style={styles.input}
         value={amount.toString()}
-        onChangeText={(text) => setAmount(parseFloat(text) || 1)}
+        onChangeText={(text) => setAmount(parseFloat(text) || "")}
         placeholder="Enter amount"
-        keyboardType="numeric"
+        placeholderTextColor="#666"
+        keyboardType="decimal-pad"
       />
-      <View style={styles.pickerContainer}>
-        <Picker
-          style={styles.picker}
-          selectedValue={fromCurrency}
-          onValueChange={(itemValue) => setFromCurrency(itemValue)}
+      <View style={styles.dropdownContainer}>
+        <TouchableOpacity
+          onPress={()=>setFromCurrencyModalVisible(true)}
+          style={styles.currencyButton}
         >
-          {currency.map((currency, idx) => (
-            <Picker.Item key={idx} label={currency} value={currency} />
-          ))}
-        </Picker>
-        <Picker
-          style={styles.picker}
-          selectedValue={toCurrency}
-          onValueChange={(itemValue) => setToCurrency(itemValue)}
+          <Image
+            style={styles.flagIconSmall}
+            source={{
+              uri:`https://flagsapi.com/${currencyToCountry[fromCurrency]}/flat/64.png`,
+            }}
+          />
+          <Text style={styles.currencyButtonText}>{fromCurrency}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={swapCurrencies} style={styles.swapButton}>
+          <Text style={styles.swapText}>⇄</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setToCurrencyModalVisible(true)}
+          style={styles.currencyButton}
         >
-          {currency.map((currency, idx) => (
-            <Picker.Item key={idx} label={currency} value={currency} />
-          ))}
-        </Picker>
+          <Image
+            style={styles.flagIconSmall}
+            source={{
+              uri: `https://flagsapi.com/${currencyToCountry[toCurrency]}/flat/64.png`,
+            }}
+          />
+          <Text style={styles.currencyButtonText}>{toCurrency}</Text>
+        </TouchableOpacity>
       </View>
+
       <Text style={styles.result}>
-        {amount} {fromCurrency} = {convertCurrency()} {toCurrency}
+        {amount && `${amount} ${fromCurrency} = ${convertCurrency()} ${toCurrency}`}
       </Text>
+
+      {/* From Currency Modal */}
+      <CurrencyModal
+        visible={isFromCurrencyModalVisible}
+        setVisible={setFromCurrencyModalVisible}
+        setCurrency={setFromCurrency}
+      />
+
+      {/* To Currency Modal */}
+      <CurrencyModal
+        visible={isToCurrencyModalVisible}
+        setVisible={setToCurrencyModalVisible}
+        setCurrency={setToCurrency}
+      />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
-    width: "80%",
-    fontSize: 16,
-  },
-  pickerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "80%",
-  },
-  picker: {
-    flex: 1,
-    height: 50,
-    marginHorizontal: 10,
-  },
-  result: {
-    fontSize: 25,
-    marginTop: 20,
-    fontWeight: "bold",
-    color: "#1d3627",
-  },
-  image: {
-    width: 100,
-    height: 100,
-  },
-});
 
 export default App;
