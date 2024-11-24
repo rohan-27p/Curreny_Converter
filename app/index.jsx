@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Modal, Image } from "react-native";
 import styles from "./styles";
-
+import currencyToCountry from "./currencyToCountry";
 const App = () => {
+  //states for the app
   const [amount, setAmount] = useState("");
   const [fromCurrency, setFromCurrency] = useState("USD");
   const [toCurrency, setToCurrency] = useState("EUR");
@@ -12,21 +13,8 @@ const App = () => {
   const [isFromCurrencyModalVisible, setFromCurrencyModalVisible] = useState(false);
   const [isToCurrencyModalVisible, setToCurrencyModalVisible] = useState(false);
 
-  const currencyToCountry = {
-    USD: "US",
-    EUR: "EU",
-    INR: "IN",
-    GBP: "GB",
-    AUD: "AU",
-    CAD: "CA",
-    JPY: "JP",
-    CNY: "CN",
-    AED: "AE",
-    EGP: "EG",
 
-    //mapping to fetch maps api for better ui while searching
-  };
-
+  //API fetching for live currency exchange
   const API_URL =
     "https://v6.exchangerate-api.com/v6/435928af75ba208f4c00a7ba/latest/USD";
 
@@ -43,23 +31,29 @@ const App = () => {
     };
 
     fetchCurrencies();
-  }, []);
+  }, []);//dependency array for useEffect
 
+
+
+  //filtering currencies while searching
   const filteredCurrencies = currency.filter((cur) =>
     cur.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
+  //maths for currency conversion
   const convertCurrency =() => {
     if(!amount) return "";
-    return (amount*exchangeRate).toFixed(3);
+    return (amount*exchangeRate).toFixed(3);//upto three decimal places
   };
+
+  //swap currencies
   const swapCurrencies = async () => {
     const newFromCurrency = toCurrency;
     const newToCurrency = fromCurrency;
   
     setFromCurrency(newFromCurrency);
     setToCurrency(newToCurrency);
-  
+    //flags for better ui
     try {
       const response=await fetch(
         `https://v6.exchangerate-api.com/v6/435928af75ba208f4c00a7ba/latest/${newFromCurrency}`
@@ -71,7 +65,7 @@ const App = () => {
     }
   };
   
-  
+  //modal for currency selection
   const CurrencyModal=({ visible, setVisible, setCurrency }) => (
     <Modal
       animationType="slide"
@@ -87,6 +81,7 @@ const App = () => {
           onChangeText={setSearchQuery}
           value={searchQuery}
         />
+       {/*search bar for better ui*/}
         <FlatList
           data={filteredCurrencies}
           keyExtractor={(item) => item}
@@ -112,7 +107,7 @@ const App = () => {
       </View>
     </Modal>
   );
-
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>EZ Converter</Text>
@@ -137,11 +132,11 @@ const App = () => {
           />
           <Text style={styles.currencyButtonText}>{fromCurrency}</Text>
         </TouchableOpacity>
-
         <TouchableOpacity onPress={swapCurrencies} style={styles.swapButton}>
+          {/*swap button is cool*/}
           <Text style={styles.swapText}>⇄</Text>
         </TouchableOpacity>
-
+        
         <TouchableOpacity
           onPress={() => setToCurrencyModalVisible(true)}
           style={styles.currencyButton}
@@ -155,19 +150,19 @@ const App = () => {
           <Text style={styles.currencyButtonText}>{toCurrency}</Text>
         </TouchableOpacity>
       </View>
-
+      {/*displaying result*/}
       <Text style={styles.result}>
         {amount && `${amount} ${fromCurrency} = ${convertCurrency()} ${toCurrency}`}
       </Text>
 
-      {/* From Currency Modal */}
+     {/*from currency modal*/}
       <CurrencyModal
         visible={isFromCurrencyModalVisible}
         setVisible={setFromCurrencyModalVisible}
         setCurrency={setFromCurrency}
       />
 
-      {/* To Currency Modal */}
+      {/*to currency modal*/}
       <CurrencyModal
         visible={isToCurrencyModalVisible}
         setVisible={setToCurrencyModalVisible}
