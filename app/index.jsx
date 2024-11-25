@@ -39,34 +39,34 @@ const App = () => {
   const filteredCurrencies = currency.filter((cur) =>
     cur.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   //maths for currency conversion
-  const convertCurrency =() => {
-    if(!amount) return "";
-    return (amount*exchangeRate).toFixed(3);//upto three decimal places
+  const convertCurrency = () => {
+    if (!amount) return "";
+    return (amount * exchangeRate).toFixed(3);//upto three decimal places
   };
 
   //swap currencies
   const swapCurrencies = async () => {
     const newFromCurrency = toCurrency;
     const newToCurrency = fromCurrency;
-  
+
     setFromCurrency(newFromCurrency);
     setToCurrency(newToCurrency);
     //flags for better ui
     try {
-      const response=await fetch(
+      const response = await fetch(
         `https://v6.exchangerate-api.com/v6/435928af75ba208f4c00a7ba/latest/${newFromCurrency}`
       );
-      const data=await response.json();
+      const data = await response.json();
       setExchangeRate(data.conversion_rates[newToCurrency]);
     } catch (error) {
       console.error("Error fetching exchange rate:", error);
     }
   };
-  
+
   //modal for currency selection
-  const CurrencyModal=({ visible, setVisible, setCurrency }) => (
+  const CurrencyModal = ({ visible, setVisible, setCurrency }) => (
     <Modal
       animationType="slide"
       transparent={true}
@@ -81,7 +81,7 @@ const App = () => {
           onChangeText={setSearchQuery}
           value={searchQuery}
         />
-       {/*search bar for better ui*/}
+        {/*search bar for better ui*/}
         <FlatList
           data={filteredCurrencies}
           keyExtractor={(item) => item}
@@ -97,7 +97,7 @@ const App = () => {
               <Image
                 style={styles.flagIcon}
                 source={{
-                  uri:`https://flagsapi.com/${currencyToCountry[item]}/flat/64.png`,
+                  uri: `https://flagsapi.com/${currencyToCountry[item]}/flat/64.png`,
                 }}
               />
               <Text style={styles.currencyText}>{item}</Text>
@@ -107,9 +107,10 @@ const App = () => {
       </View>
     </Modal>
   );
-  
+
   return (
     <View style={styles.container}>
+
       <Text style={styles.title}>EZ Converter</Text>
       <TextInput
         style={styles.input}
@@ -121,13 +122,13 @@ const App = () => {
       />
       <View style={styles.dropdownContainer}>
         <TouchableOpacity
-          onPress={()=>setFromCurrencyModalVisible(true)}
+          onPress={() => setFromCurrencyModalVisible(true)}
           style={styles.currencyButton}
         >
           <Image
             style={styles.flagIconSmall}
             source={{
-              uri:`https://flagsapi.com/${currencyToCountry[fromCurrency]}/flat/64.png`,
+              uri: `https://flagsapi.com/${currencyToCountry[fromCurrency]}/flat/64.png`,
             }}
           />
           <Text style={styles.currencyButtonText}>{fromCurrency}</Text>
@@ -136,7 +137,7 @@ const App = () => {
           {/*swap button is cool*/}
           <Text style={styles.swapText}>⇄</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           onPress={() => setToCurrencyModalVisible(true)}
           style={styles.currencyButton}
@@ -155,7 +156,7 @@ const App = () => {
         {amount && `${amount} ${fromCurrency} = ${convertCurrency()} ${toCurrency}`}
       </Text>
 
-     {/*from currency modal*/}
+      {/*from currency modal*/}
       <CurrencyModal
         visible={isFromCurrencyModalVisible}
         setVisible={setFromCurrencyModalVisible}
