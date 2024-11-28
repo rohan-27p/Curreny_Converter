@@ -98,6 +98,20 @@ const styles = StyleSheet.create({
     height: 24,
     marginRight: 8,
   },
+  convertButton: {
+    backgroundColor: "#81C784",
+    padding: 15,
+    borderRadius: 8,
+    marginVertical: 10,
+    width: "90%",
+    alignItems: "center",
+  },
+  convertButtonText: {
+    fontSize: 18,
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  
 });
 
 export default styles;

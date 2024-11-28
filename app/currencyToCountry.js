@@ -95,6 +95,7 @@ const currencyToCountry = {
     VUV: "VU",
     WST: "WS",
     XAF: "CM",
+    
   };
   
   export default currencyToCountry;
